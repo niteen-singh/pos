@@ -4,171 +4,315 @@ import os
 import shutil
 
 
+
+
 # 1. FCFS (First-Come, First-Served) Algorithm
-def fcfs(processes):
-    n = len(processes)
-    waiting_time = [0] * n
-    turnaround_time = [0] * n
+# FCFS
+# Process : [arrival_time, burst_time, pid]
+def fcfs(process_list):
+    t = 0
+    gantt = []
+    completed = {}
+    process_list.sort()
+    while process_list != []:
+        if process_list[0][0] > t:
+            t += 1
+            gantt.append("Idle")
+            continue
+        else:
+            process = process_list.pop(0)
+            gantt.append(process[2])
+            t += process[1]
+            pid = process[2]
+            ct = t
+            tt = ct - process[0]
+            wt = tt - process[1]
+            completed[pid] = [ct, tt, wt]
+    print(gantt)
+    print(completed)
 
-    for i in range(1, n):
-        waiting_time[i] = waiting_time[i - 1] + processes[i - 1][1]
 
-    for i in range(n):
-        turnaround_time[i] = waiting_time[i] + processes[i][1]
-
-    print("Process\tBurst Time\tWaiting Time\tTurnaround Time")
-    for i in range(n):
-        print(f"{processes[i][0]}\t{processes[i][1]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+if __name__ == "__main__":
+    process_list = [[2, 6, "p1"], [5, 2, "p2"], [1, 8, "p3"], [0, 3, "p4"], [4, 4, "p5"]]
+    fcfs(process_list)
 
 
-processes = [("P1", 5), ("P2", 3), ("P3", 8)]
-fcfs(processes)
+
+
 
 
 # 2. SJF (Shortest Job First) Non-Preemptive Algorithm
-def sjf_non_preemptive(processes):
-    processes.sort(key=lambda x: x[1])  # Sort by burst time
-    n = len(processes)
-    waiting_time = [0] * n
-    turnaround_time = [0] * n
+# SJF (Non pre-emptive)
+# Process: [burst_time, arrival_time, pid]
 
-    for i in range(1, n):
-        waiting_time[i] = waiting_time[i - 1] + processes[i - 1][1]
+def sjf(process_list):
+    t = 0
+    gantt = []
+    completed = {}
 
-    for i in range(n):
-        turnaround_time[i] = waiting_time[i] + processes[i][1]
+    while process_list != []:
+        available = []
+        for p in process_list:
+            if p[1] <= t:
+                available.append(p)
+        # No processes available
+        if available == []:
+            t += 1
+            gantt.append("Idle")
+            continue
+        else:
+            available.sort()
+            process = available[0]
+            # Service the process
+            burst_time = process[0]
+            pid = process[2]
+            arrival_time = process[1]
+            t += burst_time
+            gantt.append(pid)
+            ct = t
+            tt = ct - arrival_time
+            wt = tt - burst_time
+            process_list.remove(process)
+            completed[pid] = [ct, tt, wt]
+    print(gantt)
+    print(completed)
 
-    print("Process\tBurst Time\tWaiting Time\tTurnaround Time")
-    for i in range(n):
-        print(f"{processes[i][0]}\t{processes[i][1]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+
+if __name__ == "__main__":
+    process_list = [[6, 2, "p1"], [2, 5, "p2"], [8, 1, "p3"], [3, 0, "p4"], [4, 4, "p5"]]
+    sjf(process_list)
 
 
-processes = [("P1", 6), ("P2", 8), ("P3", 7), ("P4", 3)]
-sjf_non_preemptive(processes)
+
 
 
 # 3. SJF (Shortest Job First) Preemptive Algorithm
-def sjf_preemptive(processes):
-    n = len(processes)
-    remaining_time = [p[1] for p in processes]
-    complete = 0
-    time = 0
-    waiting_time = [0] * n
-    turnaround_time = [0] * n
+# SRTF / SJF Pre-emptive
 
-    while complete < n:
-        idx = -1
-        min_time = float('inf')
-        for i in range(n):
-            if remaining_time[i] > 0 and remaining_time[i] < min_time:
-                min_time = remaining_time[i]
-                idx = i
+# Process: [burst_time, arrival_time, pid]
 
-        if idx != -1:
-            remaining_time[idx] -= 1
-            time += 1
-            if remaining_time[idx] == 0:
-                complete += 1
-                turnaround_time[idx] = time
-                waiting_time[idx] = turnaround_time[idx] - processes[idx][1]
+def srtf(process_list):
+    gantt = []
+    burst_times = {}
+    for i in process_list:
+        burst_times[i[2]] = i[0]
+    completion = {}
+    t = 0
+    while process_list != []:
 
-    print("Process\tBurst Time\tWaiting Time\tTurnaround Time")
-    for i in range(n):
-        print(f"{processes[i][0]}\t{processes[i][1]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+        available = []
+        for p in process_list:
+            if p[1] <= t:
+                available.append(p)
+
+        if available == []:
+            t += 1
+            gantt.append("Idle")
+            continue
+        else:
+            available.sort()
+            process = available[0]
+            copy_process = available.pop(0)
+            t += 1
+            gantt.append(process[2])
+            # updating the burst time of the process
+            process[0] -= 1
+            process_list.remove(copy_process)
+            if process[0] == 0:
+                # this is where we have to note down our completion times
+                process_name = process[2]
+                arrival_time = process[1]
+                burst_time = burst_times[process_name]
+                ct = t
+                tt = ct - process[1]
+                wt = tt - burst_time
+                completion[process_name] = [ct, tt, wt]
+                continue
+            else:
+                process_list.append(process)
+
+    print(gantt)
+    print(completion)
 
 
-processes = [("P1", 8), ("P2", 4), ("P3", 9), ("P4", 5)]
-sjf_preemptive(processes)
+if __name__ == "__main__":
+    process_list = [[6, 2, "p1"], [2, 5, "p2"], [8, 1, "p3"], [3, 0, "p4"], [4, 4, "p5"]]
+    srtf(process_list)
+
+
+
+
 
 
 # 4. Round Robin Algorithm
-def round_robin(processes, time_quantum):
-    n = len(processes)
-    remaining_time = [p[1] for p in processes]
-    waiting_time = [0] * n
-    turnaround_time = [0] * n
-    time = 0
-    complete = 0
+# Round Robin CPU Scheduling Algorithm
+# input: process list, time quanta
+# Process: [Arrival time, burst time, pid]
 
-    while complete < n:
-        for i in range(n):
-            if remaining_time[i] > 0:
-                if remaining_time[i] > time_quantum:
-                    time += time_quantum
-                    remaining_time[i] -= time_quantum
-                else:
-                    time += remaining_time[i]
-                    waiting_time[i] = time - processes[i][1]
-                    remaining_time[i] = 0
-                    complete += 1
+def round_robin(process_list, time_quanta):
+    t = 0
+    gantt = []
+    completed = {}
+    # sort the processes wrt at
+    process_list.sort()
+    burst_times = {}
+    for p in process_list:
+        pid = p[2]
+        burst_time = p[1]
+        burst_times[pid] = burst_time
+    while process_list != []:
+        available = []
+        for p in process_list:
+            at = p[0]
+            if p[0] <= t:
+                available.append(p)
+        # boundary condition 1
+        if available == []:
+            gantt.append("Idle")
+            t += 1
+            continue
+        else:
+            process = available[0]
+            # Service this process now
+            gantt.append(process[2])
+            # remove the process
+            process_list.remove(process)
+            # Update the burst time
+            rem_burst = process[1]
+            if rem_burst <= time_quanta:
+                t += rem_burst
+                ct = t
+                pid = process[2]
+                arrival_time = process[0]
+                burst_time = burst_times[pid]
+                tt = ct - arrival_time
+                wt = tt - burst_time
+                completed[process[2]] = [ct, tt, wt]
+                continue
+            else:
+                t += time_quanta
+                process[1] -= time_quanta
+                process_list.append(process)
+    print(gantt)
+    print(completed)
 
-    for i in range(n):
-        turnaround_time[i] = waiting_time[i] + processes[i][1]
 
-    print("Process\tBurst Time\tWaiting Time\tTurnaround Time")
-    for i in range(n):
-        print(f"{processes[i][0]}\t{processes[i][1]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+if __name__ == "__main__":
+    process_list = [[2, 6, "p1"], [5, 2, "p2"], [1, 8, "p3"], [0, 3, "p4"], [4, 4, "p5"]]
+    time_quanta = 2
+    round_robin(process_list, time_quanta)
 
 
-processes = [("P1", 10), ("P2", 5), ("P3", 8)]
-time_quantum = 3
-round_robin(processes, time_quantum)
+
 
 
 # 5. Priority (Non-Preemptive) Algorithm
-def priority_non_preemptive(processes):
-    processes.sort(key=lambda x: x[2])  # Sort by priority
-    n = len(processes)
-    waiting_time = [0] * n
-    turnaround_time = [0] * n
+# Priority CPU scheduling
+# Non pre-emptive
 
-    for i in range(1, n):
-        waiting_time[i] = waiting_time[i - 1] + processes[i - 1][1]
+# Process : [Priority, pid, bursttime, arrival time]
 
-    for i in range(n):
-        turnaround_time[i] = waiting_time[i] + processes[i][1]
+def priority(process_list):
+    gantt = []
+    t = 0
+    completed = {}
+    while process_list != []:
+        available = []
+        for p in process_list:
+            arrival_time = p[3]
+            if arrival_time <= t:
+                available.append(p)
 
-    print("Process\tBurst Time\tPriority\tWaiting Time\tTurnaround Time")
-    for i in range(n):
-        print(f"{processes[i][0]}\t{processes[i][1]}\t\t{processes[i][2]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+        if available == []:
+            gantt.append("Idle")
+            t += 1
+            continue
+        else:
+            available.sort()
+            process = available[0]
+            # service the process
+            # 1. remove the process
+            process_list.remove(process)
+            # 2. add to gantt chart
+            pid = process[1]
+            gantt.append(pid)
+            # 3. update the time
+            burst_time = process[2]
+            t += burst_time
+            # create an entry in the completed dictionary
+            # Calculate ct, tt, wt
+            ct = t
+            arrival_time = process[3]
+            tt = ct - arrival_time
+            wt = tt - burst_time
+            completed[pid] = [ct, tt, wt]
+
+    print(gantt)
+    print(completed)
 
 
-processes = [("P1", 4, 2), ("P2", 1, 1), ("P3", 8, 3)]
-priority_non_preemptive(processes)
+if __name__ == "__main__":
+    process_list = [[5, "p1", 6, 2], [4, "p2", 2, 5], [1, "p3", 8, 1], [2, "p4", 3, 0], [3, "p5", 4, 4]]
+    priority(process_list)
+
+
+
 
 
 # 6. Priority (Preemptive) Algorithm
-def priority_preemptive(processes):
-    n = len(processes)
-    remaining_time = [p[1] for p in processes]
-    complete = 0
-    time = 0
-    waiting_time = [0] * n
-    turnaround_time = [0] * n
+# Priority premptive
+# Process = [priority, pid, burst_time, arrival_time]
 
-    while complete < n:
-        idx = -1
-        max_priority = float('inf')
-        for i in range(n):
-            if remaining_time[i] > 0 and processes[i][2] < max_priority:
-                max_priority = processes[i][2]
-                idx = i
+def priority(process_list):
+    t = 0
+    gantt = []
+    completed = {}
+    burst_times = {}
+    for p in process_list:
+        burst_times[p[1]] = p[2]
+    while process_list != []:
+        # finding the available processes
+        available = []
+        for p in process_list:
+            arrival_time = p[3]
+            if arrival_time <= t:
+                available.append(p)
+        if available == []:
+            gantt.append("Idle")
+            t += 1
+            continue
+        else:
+            available.sort()
+            process = available[0]
+            gantt.append(process[1])
+            t += 1
+            process_list.remove(process)
+            # updating the bursttime
+            process[2] -= 1
+            # boundary condition if process is completed
+            if process[2] == 0:
+                # completed
+                pid = process[1]
+                arrival_time = process[3]
+                burst_time = burst_times[pid]
+                ct = t
+                tt = ct - arrival_time
+                wt = tt - burst_time
+                completed[pid] = [ct, tt, wt]
+                continue
+            else:
+                process_list.append(process)
+    print(gantt)
+    print(completed)
 
-        if idx != -1:
-            remaining_time[idx] -= 1
-            time += 1
-            if remaining_time[idx] == 0:
-                complete += 1
-                turnaround_time[idx] = time
-                waiting_time[idx] = turnaround_time[idx] - processes[idx][1]
 
-    print("Process\tBurst Time\tPriority\tWaiting Time\tTurnaround Time")
-    for i in range(n):
-        print(f"{processes[i][0]}\t{processes[i][1]}\t\t{processes[i][2]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+if __name__ == "__main__":
+    process_list = [[5, "p1", 6, 2], [2, "p2", 2, 5], [4, "p3", 8, 1], [1, "p4", 3, 0], [3, "p5", 4, 4]]
+    priority(process_list)
 
 
-processes = [("P1", 6, 2), ("P2", 8, 1), ("P3", 7, 3)]
-priority_preemptive(processes)
+
+
 
 
 # Memory Management Algorithms
@@ -193,6 +337,9 @@ def fifo_page_replacement(pages, frame_size):
 pages = [7, 0, 1, 2, 0, 3, 0, 4, 2, 3]
 frame_size = 3
 fifo_page_replacement(pages, frame_size)
+
+
+
 
 
 # 2. Optimal Page Replacement Algorithm
@@ -226,6 +373,9 @@ frame_size = 3
 optimal_page_replacement(pages, frame_size)
 
 
+
+
+
 # 3. LRU Page Replacement Algorithm
 def lru_page_replacement(pages, frame_size):
     frame = []
@@ -249,6 +399,9 @@ def lru_page_replacement(pages, frame_size):
 pages = [4, 1, 2, 1, 3, 4, 2, 3]
 frame_size = 3
 lru_page_replacement(pages, frame_size)
+
+
+
 
 
 # 4. Banker’s Algorithm for Deadlock Avoidance
@@ -302,6 +455,11 @@ if __name__ == "__main__":
     allocated = {"p0": [0, 1, 0], "p1": [2, 0, 0], "p2": [3, 0, 2], "p3": [2, 1, 1], "p4": [0, 0, 2]}
     max_ = {"p0": [7, 5, 3], "p1": [3, 2, 2], "p2": [9, 0, 2], "p3": [2, 2, 2], "p4": [4, 3, 3]}
     bankers(allocated, max_, available)
+
+
+
+
+
 
 # linux command line
 import subprocess
@@ -362,6 +520,12 @@ if __name__ == "__main__":
     else:
         command = sys.argv[1]
         execute_command(command)
+
+
+
+
+
+
 
 # fifo Queue implementation
 import queue
