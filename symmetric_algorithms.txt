@@ -1,0 +1,144 @@
+1. DES Algorithm
+
+from Crypto.Cipher import DES
+from Crypto.Util.Padding import pad, unpad
+import os
+
+def des_encrypt(plaintext, key):
+    cipher = DES.new(key, DES.MODE_CBC)
+    ct_bytes = cipher.encrypt(pad(plaintext.encode(), DES.block_size))
+    return cipher.iv, ct_bytes
+
+def des_decrypt(iv, ciphertext, key):
+    cipher = DES.new(key, DES.MODE_CBC, iv)
+    pt = unpad(cipher.decrypt(ciphertext), DES.block_size)
+    return pt.decode()
+
+# Example usage
+key = os.urandom(8)  # DES key must be 8 bytes
+plaintext = "Hello!"
+iv, ciphertext = des_encrypt(plaintext, key)
+print("DES Encrypted:", ciphertext)
+print("DES Decrypted:", des_decrypt(iv, ciphertext, key))
+
+
+
+
+
+2. AES Algorithm
+
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import os
+
+def aes_encrypt(plaintext, key):
+    cipher = AES.new(key, AES.MODE_CBC)
+    ct_bytes = cipher.encrypt(pad(plaintext.encode(), AES.block_size))
+    return cipher.iv, ct_bytes
+
+def aes_decrypt(iv, ciphertext, key):
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    pt = unpad(cipher.decrypt(ciphertext), AES.block_size)
+    return pt.decode()
+
+# Example usage
+key = os.urandom(16)  # AES key must be 16, 24, or 32 bytes
+plaintext = "Hello, World!"
+iv, ciphertext = aes_encrypt(plaintext, key)
+print("AES Encrypted:", ciphertext)
+print("AES Decrypted:", aes_decrypt(iv, ciphertext, key))
+
+
+
+
+3. RC4 Algorithm
+
+from Crypto.Cipher import ARC4
+
+def rc4_encrypt(plaintext, key):
+    cipher = ARC4.new(key)
+    return cipher.encrypt(plaintext.encode())
+
+def rc4_decrypt(ciphertext, key):
+    cipher = ARC4.new(key)
+    return cipher.decrypt(ciphertext).decode()
+
+# Example usage
+key = b'SecretKey'
+plaintext = "Hello, World!"
+ciphertext = rc4_encrypt(plaintext, key)
+print("RC4 Encrypted:", ciphertext)
+print("RC4 Decrypted:", rc4_decrypt(ciphertext, key))
+
+
+
+
+4. RC5 Algorithm (Simple Implementation)
+
+from rc5 import RC5
+
+key = b'SecretKey1234567'  # 16 bytes
+plaintext = b'HelloRC5!'   # 8 bytes (or pad to 8 bytes)
+
+# Initialize RC5 (defaults: 12 rounds, 64-bit block size)
+rc5 = RC5(key)
+
+# Encrypt
+ciphertext = rc5.encrypt(plaintext)
+print("RC5 Encrypted:", ciphertext)
+
+# Decrypt
+decrypted = rc5.decrypt(ciphertext)
+print("RC5 Decrypted:", decrypted.decode())
+
+
+
+
+
+5. Blowfish Algorithm
+
+from Crypto.Cipher import Blowfish
+from Crypto.Util.Padding import pad, unpad
+import os
+
+def blowfish_encrypt(plaintext, key):
+    cipher = Blowfish.new(key, Blowfish.MODE_CBC)
+    ct_bytes = cipher.encrypt(pad(plaintext.encode(), Blowfish.block_size))
+    return cipher.iv, ct_bytes
+
+def blowfish_decrypt(iv, ciphertext, key):
+    cipher = Blowfish.new(key, Blowfish.MODE_CBC, iv)
+    pt = unpad(cipher.decrypt(ciphertext), Blowfish.block_size)
+    return pt.decode()
+
+# Example usage
+key = os.urandom(16)  # Blowfish key can be 4 to 56 bytes
+plaintext = "Hello, World!"
+iv, ciphertext = blowfish_encrypt(plaintext, key)
+print("Blowfish Encrypted:", ciphertext)
+print("Blowfish Decrypted:", blowfish_decrypt(iv, ciphertext, key))
+
+
+
+6. IDEA Algorithm
+
+from Crypto.Cipher import IDEA
+from Crypto.Util.Padding import pad, unpad
+import os
+
+def idea_encrypt(plaintext, key):
+    cipher = IDEA.new(key, IDEA.MODE_CBC )
+    ct_bytes = cipher.encrypt(pad(plaintext.encode(), IDEA.block_size))
+    return cipher.iv, ct_bytes
+
+def idea_decrypt(iv, ciphertext, key):
+    cipher = IDEA.new(key, IDEA.MODE_CBC, iv)
+    pt = unpad(cipher.decrypt(ciphertext), IDEA.block_size)
+    return pt.decode()
+
+# Example usage
+key = os.urandom(16)  # IDEA key must be 16 bytes
+plaintext = "Hello, World!"
+iv, ciphertext = idea_encrypt(plaintext, key)
+print("IDEA Encrypted:", ciphertext)
+print("IDEA Decrypted:", idea_decrypt(iv, ciphertext, key))
