@@ -1,0 +1,218 @@
+import numpy as np
+
+# Write a program to implement Caesar Cipher Encryption b Decryption in Python.
+
+
+def caesar_cipher(pt, shift):
+    alphabets = "abcdefghijklmnopqrstuvwxyz"
+    ct = []
+    for i in pt:
+        idx = alphabets.index(i)
+        ct.append(alphabets[idx + shift])
+    print("encrypted text")
+    ct = "".join(ct)
+    print(ct)
+
+    dec = []
+    print("decrypted text")
+    for i in ct:
+        idx = alphabets.index(i)
+        dec.append(alphabets[idx - shift])
+    dec = "".join(dec)
+    return dec
+
+
+# Write a program to implement Monoalphabetic Cipher Encryption b Decryption in Python.
+
+
+def mono(pt, alpha):
+    alpharef = "abcdefghijklmnopqrstuvwxyz"
+    ct = []
+    for i in pt:
+        idx = alpharef.index(i)
+        ct.append(alpha[idx])
+    print("encrypted text")
+    ct = "".join(ct)
+    print(ct)
+
+    print("decrypted text")
+    dec = []
+    for i in ct:
+        idxx = alpha.index(i)
+        dec.append(alpharef[idxx])
+    return "".join(dec)
+
+
+# Write a program to implement Hill Cipher Encryption in Python.
+
+
+def hill_cipher(pt="helloworld", key="test"):
+
+    ati = {chr(i): i - 97 for i in range(97, 123)}
+    ita = {i - 97: chr(i) for i in range(97, 123)}
+
+    pt_num = [ati[i] for i in pt]
+    key_num = [ati[i] for i in key]
+    ptmat = np.array(pt_num).reshape(5, 2)
+    keymat = np.array(key_num).reshape(2, 2)
+
+    mat = np.concatenate(np.matmul(ptmat, keymat) % 26)
+    ct = [ita[i] for i in mat]
+    return "".join(ct)
+
+
+# Write a program to implement Playfair Cipher Encryption b Decryption in Python.
+
+
+def playfair(pt, key="playfair"):
+    alphabets = [chr(i) for i in range(97, 123)]
+    alphabets.remove("j")
+
+    matrix = []
+    for i in key:
+        if not i in matrix:
+            matrix.append(i)
+
+    for i in alphabets:
+        if not i in matrix:
+            matrix.append(i)
+
+    text = []
+    i = 0
+    while i < len(pt) - 1:
+        if pt[i] == pt[i + 1]:
+            text.append(pt[i] + "x")
+            i += 1
+        else:
+            text.append(pt[i] + pt[i + 1])
+            i += 2
+
+    mat = np.array(matrix).reshape(5, 5)
+    ciphertext = ""
+
+    for i in text:
+        row1, col1 = np.where(mat == i[0])
+        row2, col2 = np.where(mat == i[1])
+
+        if row1[0] == row2[0]:  # Same row
+            ciphertext += mat[row1[0], (col1[0] + 1) % 5]
+            ciphertext += mat[row2[0], (col2[0] + 1) % 5]
+        elif col1[0] == col2[0]:  # Same column
+            ciphertext += mat[(row1[0] + 1) % 5, col1[0]]
+            ciphertext += mat[(row2[0] + 1) % 5, col2[0]]
+        else:  # Rectangle rule
+            ciphertext += mat[row1[0], col2[0]]
+            ciphertext += mat[row2[0], col1[0]]
+
+    print("encrypted text: ", ciphertext)
+
+    dec = ""
+    for i in range(0, len(ciphertext), 2):
+        digraph = ciphertext[i : i + 2]
+        row1, col1 = np.where(mat == digraph[0])
+        row2, col2 = np.where(mat == digraph[1])
+
+        if row1[0] == row2[0]:  # Same row
+            dec += mat[row1[0], (col1[0] - 1) % 5]
+            dec += mat[row2[0], (col2[0] - 1) % 5]
+        elif col1[0] == col2[0]:  # Same column
+            dec += mat[(row1[0] - 1) % 5, col1[0]]
+            dec += mat[(row2[0] - 1) % 5, col2[0]]
+        else:  # Rectangle rule
+            dec += mat[row1[0], col2[0]]
+            dec += mat[row2[0], col1[0]]
+
+    return dec
+
+
+pt = "hello"
+alpha = "qwertyuiopasdfghjklzxcvbnm"
+# print(mono(pt,alpha))
+shift = 3
+# print(caesar_cipher(pt,shift))
+# print(hill_cipher())
+print(playfair(pt))
+
+
+
+
+
+
+
+import random
+
+def otp_encrypt(text, key):
+    cipher = ""
+    for t, k in zip(text, key):
+        c = (ord(t) - ord('A')) ^ (ord(k) - ord('A'))
+        cipher += chr(c + ord('A'))
+    return cipher
+
+def otp_decrypt(cipher, key):
+    return otp_encrypt(cipher, key)
+
+def generate_key(length):
+    return ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ') for _ in range(length))
+
+text = "HELLO"
+text = text.upper()
+key = generate_key(len(text))
+
+cipher = otp_encrypt(text, key)
+decrypted = otp_decrypt(cipher, key)
+
+print("Text     :", text)
+print("Key      :", key)
+print("Encrypted:", cipher)
+print("Decrypted:", decrypted)
+
+
+
+
+
+
+
+
+
+def vigenere_encrypt(text, key):
+    encrypted = ""
+    key = key.upper()
+    text = text.upper()
+
+    for i in range(len(text)):
+        if text[i].isalpha():
+            t = ord(text[i]) - ord('A')
+            k = ord(key[i % len(key)]) - ord('A')
+            c = (t + k) % 26
+            encrypted += chr(c + ord('A'))
+        else:
+            encrypted += text[i]
+    return encrypted
+
+def vigenere_decrypt(cipher, key):
+    decrypted = ""
+    key = key.upper()
+    cipher = cipher.upper()
+
+    for i in range(len(cipher)):
+        if cipher[i].isalpha():
+            c = ord(cipher[i]) - ord('A')
+            k = ord(key[i % len(key)]) - ord('A')
+            t = (c - k + 26) % 26
+            decrypted += chr(t + ord('A'))
+        else:
+            decrypted += cipher[i]
+    return decrypted
+
+# Example usage
+text = "HELLO"
+key = "KEY"
+
+cipher = vigenere_encrypt(text, key)
+plain = vigenere_decrypt(cipher, key)
+
+print("Text     :", text)
+print("Key      :", key)
+print("Encrypted:", cipher)
+print("Decrypted:", plain)
+
