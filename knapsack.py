@@ -12,5 +12,5 @@ def knapsack(W, wt, val, n):
 values = [60, 100, 120]
 weights = [10, 20, 30]
 capacity = 50
-n = len(values)
-print("✅ Knapsack Maximum Value:", knapsack(capacity, weights, values, n))
+g = len(values)
+print(" Knapsack Maximum Value:", knapsack(capacity, weights, values, g))
